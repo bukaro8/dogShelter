@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or your DB provider
+  url      = env("POSTGRES_URL")
+}
+
+model User {
+  id       String   @id @default(uuid())
+  name     String
+  email    String   @unique
+  password String?
+  role     Role     @default(GUEST)
+  phone    String?
+  picture  String?
+  address   String?
+  localidad String?
+  provincia String?
+  
+  // Relations
+  applications Application[]
+  
+  @@map("users")
+}
+
+enum Role {
+  GUEST
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Pet {
+  id        String   @id @default(uuid())
+  name      String
+  size      petSize
+  age       Int
+  type      PetType
+  shelterId  Int
+  picture   String?
+  description String
+  gender    PetGender
+  status    Boolean
+
+
+  // Relations
+  shelter    Shelter   @relation(fields: [shelterId], references: [id])
+  applications Application[]
+
+  @@map("pets")
+}
+
+enum PetGender {
+  MACHO
+  HEMBRA
+}
+enum petSize {
+  CHICO
+  MEDIANO
+  GRANDE
+}
+
+enum PetType {
+  PERRO
+  GATO
+}
+enum ApplicationStatus {
+  APPROVED
+  DENIED
+  PENDING
+}
+model Application {
+  id      Int   @id @default(autoincrement())
+  userId  String
+  petId   String
+  status  ApplicationStatus @default(PENDING)  
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  pet   Pet   @relation(fields: [petId], references: [id])
+
+  @@unique([userId,petId])
+  @@map("applications")
+}
+
+model Shelter {
+  id       Int   @id @default(autoincrement())
+  name    String
+  address  String
+  email    String   @unique
+  phone    String
+  
+  // Relations
+  pets Pet[]
+
+  @@map("shelter")
+}
